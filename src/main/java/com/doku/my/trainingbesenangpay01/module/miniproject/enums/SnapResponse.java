@@ -24,7 +24,7 @@ public enum SnapResponse
     INVALID_MANDATORY_FIELD(HttpStatus.BAD_REQUEST, "02", "Invalid Mandatory Field {{param}}"), // {param} contains invalid mandatory field names
 
     // HttpStatus.UNAUTHORIZED (401)
-    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "00", "Unauthorized. [{param}]"), // {param} contains reason
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "00", "Unauthorized."),
     INVALID_TOKEN_B2B(HttpStatus.UNAUTHORIZED, "01", "Invalid Token (B2B)"),
     INVALID_CUSTOMER_TOKEN(HttpStatus.UNAUTHORIZED, "02", "Invalid Customer Token"),
     TOKEN_NOT_FOUND_B2B(HttpStatus.UNAUTHORIZED, "03", "Token Not Found (B2B)"),

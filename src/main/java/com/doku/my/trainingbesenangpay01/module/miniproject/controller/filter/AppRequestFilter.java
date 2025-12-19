@@ -1,5 +1,9 @@
 package com.doku.my.trainingbesenangpay01.module.miniproject.controller.filter;
 
+import com.doku.my.trainingbesenangpay01.module.miniproject.dto.SnapBaseResponse;
+import com.doku.my.trainingbesenangpay01.module.miniproject.enums.SnapResponse;
+import com.doku.my.trainingbesenangpay01.module.miniproject.exception.MerchantException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,6 +39,7 @@ public class AppRequestFilter extends OncePerRequestFilter
     private static final AppAntPathMatcher PATH_MATCHER = new AppAntPathMatcher();
 
     private final RequestMappingHandlerMapping requestMappingHandlerMapping;
+    private final ObjectMapper objectMapper;
 
     @Value("${app.request-filter.exclude-paths: /**/actuator/**}")
     private List<String> excludePaths;
@@ -68,7 +73,40 @@ public class AppRequestFilter extends OncePerRequestFilter
                 }
             }
 
-            filterChain.doFilter(servletRequestWrapper, servletResponseWrapper);
+            /*
+             * Modify this code below to validate the basic-auth of the client.
+             *
+             * If this API method is annotated with @AuthorizedMerchant, and that annotation contains value = true:
+             * - Validate basic-auth client using merchant.client_id & merchant.client_secret.
+             *
+             * If this API method is annotated with @AuthorizedAcquirer, and that annotation contains value = true:
+             * - Validate basic-auth client using acquirer.client_id & acquirer.client_secret.
+             *
+             * Response with UNAUTHORIZED (use this sample response below if the basic-auth is not matched).
+             */
+            var isAuthorized = true;
+
+            if(!isAuthorized)
+            {
+                var snapResponse = SnapResponse.UNAUTHORIZED;
+
+                var snapBaseResponse = SnapBaseResponse.builder()
+                    .responseCode(snapResponse.buildResponseCode())
+                    .responseMessage(snapResponse.getResponseMessage())
+                    .build();
+
+                servletResponseWrapper.setContentType("application/json");
+                servletResponseWrapper.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                servletResponseWrapper.getWriter().write(objectMapper.writeValueAsString(snapBaseResponse));
+            }
+            else
+            {
+                filterChain.doFilter(servletRequestWrapper, servletResponseWrapper);
+            }
+        }
+        catch(MerchantException ex)
+        {
+            throw ex;
         }
         catch(Exception ex)
         {
